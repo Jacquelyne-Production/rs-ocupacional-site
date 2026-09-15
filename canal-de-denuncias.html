@@ -408,7 +408,7 @@
         <h1>Leve o Canal de Denúncias para <em>toda a sua carteira de clientes.</em></h1>
         <p class="lead">Uma nova linha de receita recorrente para a sua consultoria de SST, medicina ocupacional ou assessoria: ofereça aos seus clientes um canal de denúncias completo, com painel de gestão próprio para cada empresa — sem precisar desenvolver nada.</p>
         <div class="hero-ctas">
-          <a class="btn btn-mint" href="https://wa.me/5541988376454" target="_blank" rel="noopener">Quero oferecer aos meus clientes</a>
+          <a href="#" class="btn btn-mint js-lead-modal" data-campaign="Canal de Denúncias (Consultorias) — Hero">Quero oferecer aos meus clientes</a>
           <a class="btn btn-outline" href="https://wa.me/5541988376454" target="_blank" rel="noopener">Falar com um consultor</a>
         </div>
         <div class="hero-trust">
@@ -749,7 +749,7 @@
       <h2>Leve o Canal de Denúncias para toda a sua carteira de clientes.</h2>
       <p>Fale com a RS Ocupacional e veja como oferecer um canal de denúncias completo, com painel de gestão próprio, para cada empresa da sua carteira.</p>
       <div class="cta-final-btns">
-        <a class="btn btn-mint" href="https://wa.me/5541988376454" target="_blank" rel="noopener">Quero oferecer aos meus clientes</a>
+        <a href="#" class="btn btn-mint js-lead-modal" data-campaign="Canal de Denúncias (Consultorias) — CTA final">Quero oferecer aos meus clientes</a>
         <a class="btn btn-outline-light" href="https://www.ocupacionalrs.com.br/" target="_blank" rel="noopener">Conhecer a RS Ocupacional</a>
       </div>
     </div>
@@ -832,6 +832,162 @@
     });
   });
 </script>
+
+<!-- ===== RS OCUPACIONAL — Captura de leads (Supabase) ===== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+  var SUPABASE_URL = 'https://mddrkrhzcklkdhzsankm.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable_Ys2V4Y2D6z-wy-QqNrzkSQ_Qe2GNoWB';
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  window.rsSaveLead = function(fields){
+    var payload = Object.assign({
+      stage: 'novo',
+      source: 'Site',
+      createdAt: new Date().toISOString()
+    }, fields);
+    return sb.from('leads').insert({ data: payload }).then(function(res){
+      return !res.error;
+    });
+  };
+})();
+</script>
+
+<!-- ===== RS OCUPACIONAL — Modal de proposta ===== -->
+<style>
+  .rs-modal-overlay{
+    position:fixed; inset:0; background:rgba(15,43,50,0.55); backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center; z-index:1000; padding:20px;
+  }
+  .rs-modal-overlay.open{ display:flex; }
+  .rs-modal{
+    background:#FBFCFB; border-radius:18px; padding:32px; max-width:440px; width:100%;
+    box-shadow:0 30px 60px -20px rgba(18,45,54,0.35); position:relative; font-family:'Poppins',sans-serif;
+  }
+  .rs-modal-close{
+    position:absolute; top:16px; right:16px; width:30px; height:30px; border-radius:50%;
+    border:none; background:rgba(22,48,58,0.06); cursor:pointer; font-size:16px; color:#16303A;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .rs-modal h3{ font-family:'Playfair Display',serif; font-size:22px; color:#16303A; margin:0 0 8px; font-weight:500; }
+  .rs-modal p.rs-modal-lead{ font-size:13.5px; color:rgba(22,48,58,0.7); margin:0 0 20px; }
+  .rs-modal label{ display:block; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:rgba(22,48,58,0.55); margin:14px 0 6px; }
+  .rs-modal input, .rs-modal textarea{
+    width:100%; border:1.5px solid rgba(22,48,58,0.14); border-radius:10px; padding:12px 14px;
+    font-family:'Poppins',sans-serif; font-size:14px; color:#16303A; box-sizing:border-box;
+  }
+  .rs-modal input:focus, .rs-modal textarea:focus{ outline:none; border-color:#5E86B3; }
+  .rs-modal-submit{
+    width:100%; margin-top:20px; padding:14px; border-radius:999px; border:none;
+    background:#16303A; color:#fff; font-family:'Poppins',sans-serif; font-weight:500; font-size:14px;
+    cursor:pointer; transition:background .18s ease;
+  }
+  .rs-modal-submit:hover{ background:#1A404C; }
+  .rs-modal-submit:disabled{ opacity:.6; cursor:default; }
+  .rs-modal-status{ font-size:13px; margin-top:12px; text-align:center; }
+  .rs-modal-status.err{ color:#C1584A; }
+  .rs-modal-status.ok{ color:#4C9A78; }
+  .rs-modal-whats{
+    display:none; margin-top:16px; text-align:center; padding-top:16px; border-top:1px solid rgba(22,48,58,0.1);
+  }
+  .rs-modal-whats.show{ display:block; }
+  .rs-modal-whats p{ font-size:12.5px; color:rgba(22,48,58,0.6); margin:0 0 10px; }
+  .rs-modal-whats a{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:12px 24px; border-radius:999px; background:#25505C; color:#fff; font-size:13.5px;
+    font-weight:500; text-decoration:none;
+  }
+</style>
+
+<div class="rs-modal-overlay" id="rsLeadModalOverlay">
+  <div class="rs-modal">
+    <button type="button" class="rs-modal-close" id="rsLeadModalClose" aria-label="Fechar">&times;</button>
+    <h3>Solicitar proposta</h3>
+    <p class="rs-modal-lead">Preencha seus dados e nossa equipe entra em contato com você.</p>
+    <form id="rsLeadForm">
+      <label for="rsLeadNome">Nome</label>
+      <input id="rsLeadNome" type="text" placeholder="Seu nome" required>
+      <label for="rsLeadTel">Telefone / WhatsApp</label>
+      <input id="rsLeadTel" type="text" placeholder="(00) 00000-0000" required>
+      <label for="rsLeadEmail">E-mail</label>
+      <input id="rsLeadEmail" type="email" placeholder="voce@empresa.com.br">
+      <label for="rsLeadEmpresa">Empresa</label>
+      <input id="rsLeadEmpresa" type="text" placeholder="Nome da empresa">
+      <button type="submit" class="rs-modal-submit" id="rsLeadSubmitBtn">Enviar solicitação</button>
+      <div class="rs-modal-status" id="rsLeadStatus"></div>
+    </form>
+    <div class="rs-modal-whats" id="rsLeadWhats">
+      <p>Prefere falar agora? Antecipe seu pedido chamando a gente direto no WhatsApp.</p>
+      <a href="https://wa.me/5541988376454" target="_blank" rel="noopener" id="rsLeadWhatsLink">Chamar no WhatsApp agora</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var overlay = document.getElementById('rsLeadModalOverlay');
+  var closeBtn = document.getElementById('rsLeadModalClose');
+  var form = document.getElementById('rsLeadForm');
+  var submitBtn = document.getElementById('rsLeadSubmitBtn');
+  var status = document.getElementById('rsLeadStatus');
+  var whatsBox = document.getElementById('rsLeadWhats');
+  var currentCampaign = 'Geral';
+
+  function openModal(campaign){
+    currentCampaign = campaign || 'Geral';
+    status.textContent = '';
+    status.className = 'rs-modal-status';
+    whatsBox.classList.remove('show');
+    form.reset();
+    form.style.display = '';
+    overlay.classList.add('open');
+  }
+  function closeModal(){ overlay.classList.remove('open'); }
+
+  document.querySelectorAll('.js-lead-modal').forEach(function(trigger){
+    trigger.addEventListener('click', function(e){
+      e.preventDefault();
+      openModal(trigger.getAttribute('data-campaign'));
+    });
+  });
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function(e){ if (e.target === overlay) closeModal(); });
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var nome = document.getElementById('rsLeadNome').value.trim();
+    var tel = document.getElementById('rsLeadTel').value.trim();
+    var email = document.getElementById('rsLeadEmail').value.trim();
+    var empresa = document.getElementById('rsLeadEmpresa').value.trim();
+    if (!nome || !tel){
+      status.textContent = 'Preencha ao menos nome e telefone.';
+      status.className = 'rs-modal-status err';
+      return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando...';
+    window.rsSaveLead({
+      name: nome, phone: tel, email: email, company: empresa,
+      source: 'Landing Page', campaign: currentCampaign
+    }).then(function(ok){
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar solicitação';
+      if (ok){
+        form.style.display = 'none';
+        status.textContent = 'Recebemos sua solicitação! Nossa equipe vai te chamar em breve.';
+        status.className = 'rs-modal-status ok';
+        whatsBox.classList.add('show');
+      } else {
+        status.textContent = 'Não foi possível enviar agora. Tente de novo ou chame no WhatsApp.';
+        status.className = 'rs-modal-status err';
+        whatsBox.classList.add('show');
+      }
+    });
+  });
+})();
+</script>
+
 
 </body>
 </html>

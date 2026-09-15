@@ -698,7 +698,7 @@
       <div class="eyebrow">Contato</div>
       <h2>Entre em contato e agende uma reunião agora</h2>
       <p class="lead" style="margin-top:16px;">A RS Ocupacional oferece soluções completas para empresas de todos os portes e classificações de risco. Somos referência em SST com mais de 10 anos de experiência no mercado.</p>
-      <form class="form" onsubmit="return false;">
+      <form class="form" id="rsContactForm">
         <label for="nome">Nome</label>
         <input id="nome" type="text" placeholder="Seu nome">
         <label for="tel">Telefone</label>
@@ -707,7 +707,8 @@
         <input id="email" type="email" placeholder="voce@empresa.com.br">
         <label for="msg">Mensagem</label>
         <textarea id="msg" placeholder="Sua mensagem"></textarea>
-        <a class="btn btn-solid" style="justify-content:center; margin-top:6px;" href="https://wa.me/5541988376454" target="_blank" rel="noopener">Enviar agora mesmo</a>
+        <button type="submit" class="btn btn-solid" id="rsContactSubmit" style="justify-content:center; margin-top:6px; width:100%; border:none; cursor:pointer;">Enviar agora mesmo</button>
+        <div id="rsContactStatus" style="font-size:13px; margin-top:10px;"></div>
       </form>
     </div>
     <div>
@@ -815,6 +816,67 @@
     el.appendChild(img);
     track.appendChild(el);
   });
+</script>
+
+<!-- ===== RS OCUPACIONAL — Captura de leads (Supabase) ===== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+  var SUPABASE_URL = 'https://mddrkrhzcklkdhzsankm.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable_Ys2V4Y2D6z-wy-QqNrzkSQ_Qe2GNoWB';
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  window.rsSaveLead = function(fields){
+    var payload = Object.assign({
+      stage: 'novo',
+      source: 'Site',
+      createdAt: new Date().toISOString()
+    }, fields);
+    return sb.from('leads').insert({ data: payload }).then(function(res){
+      return !res.error;
+    });
+  };
+})();
+</script>
+
+
+<script>
+(function(){
+  var form = document.getElementById('rsContactForm');
+  if (!form) return;
+  var btn = document.getElementById('rsContactSubmit');
+  var status = document.getElementById('rsContactStatus');
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var nome = document.getElementById('nome').value.trim();
+    var tel = document.getElementById('tel').value.trim();
+    var email = document.getElementById('email').value.trim();
+    var msg = document.getElementById('msg').value.trim();
+    if (!nome || !tel){
+      status.textContent = 'Preencha ao menos nome e telefone.';
+      status.style.color = '#C1584A';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    window.rsSaveLead({
+      name: nome, phone: tel, email: email, message: msg,
+      source: 'Site institucional', campaign: 'Formulário de contato'
+    }).then(function(ok){
+      btn.disabled = false;
+      btn.textContent = 'Enviar agora mesmo';
+      if (ok){
+        form.reset();
+        status.textContent = 'Recebemos seu contato! Em breve alguém da nossa equipe fala com você.';
+        status.style.color = '#4C9A78';
+      } else {
+        status.textContent = 'Não foi possível enviar agora. Tente novamente ou chame no WhatsApp.';
+        status.style.color = '#C1584A';
+      }
+    });
+  });
+})();
 </script>
 
 </body>
